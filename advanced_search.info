@@ -1,0 +1,5 @@
+name = Islandora Solr Advanced Search
+package = Islandora Search
+description = Provides additional fields for the Islandora Solr Search form.
+dependencies[] = islandora_solr_search
+core = 6.x

@@ -1,0 +1,156 @@
+<?php
+
+/**
+ * Implements hook_perm().
+ */
+function advanced_search_perm() {
+  return array('access advanced search');
+}
+
+/**
+ * Implements hook_menu().
+ */
+function advanced_search_menu() {
+  $items = array();
+
+  // Type '$item ⇥' to create a new menu item.
+  $items['advanced_search'] = array(
+    'title' => 'Advanced Search',
+    'description' => 'The description of the menu item. It is used as title attribute and on the administration overview page.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_solr_search_block_form'),
+    'access arguments' => array('access advanced search'),
+  );
+
+  return $items;
+}
+
+function _advanced_search_discipline_options() {
+  return array('Life Sciences','Modern Languages');
+}
+
+function _advanced_search_year_options() {
+  $years = array();
+  for ($i=1900; $i<=2012; $i++) {
+    $years[$i] = $i;
+  }
+  return $years;
+}
+
+function _advanced_search_publication_type_options() {
+  return array(
+    'all' => 'All Journals',
+    'peer_reviewed' => 'All Peer-Reviewed Journals',
+  );
+}
+
+function _advanced_search_language_options() {
+  return array(
+    'en' => t('English'),
+    'de' => t('German'),
+    'fr' => t('French'),
+    'es' => t('Spanish'),
+    'it' => t('Italian'),
+    'pt' => t('Portuguese'),
+    'jp' => t('Japanese'),
+    'cn' => t('Chinese'),
+  );
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function advanced_search_form_alter(&$form, &$form_state, $form_id) {
+  switch ($form_id) {
+    case 'islandora_solr_search_block_form':
+      // Form modification code goes here.
+      $form['discipline'] = array(
+        '#type' => 'select',
+        '#title' => t('Please select a discipline for more accurate searching'),
+        '#multiple' => FALSE,
+        '#description' => t('The description appears usually below the item.'),
+        '#options' => _advanced_search_discipline_options(),
+        '#default_value' => -1,
+      );
+
+      $form['filters'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Search Limits'),
+        '#description' => t('The description appears at the top of the fieldset.'),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#access' => user_access('administer advanced_search'),
+      );
+
+      $form['filters']['published_from'] = array(
+        '#type' => 'select',
+        '#title' => t('Published between'),
+        '#options' => _advanced_search_year_options(),
+        '#default_value' => 1900,
+      );
+
+      $form['filters']['published_to'] = array(
+        '#type' => 'select',
+        '#title' => t('and'),
+        '#options' => _advanced_search_year_options(),
+        '#default_value' => 2012,
+      );
+
+      $form['filters']['publication_type'] = array(
+        '#type' => 'select',
+        '#title' => t('Publication type'),
+        //'#multiple' => TRUE,
+        '#description' => t('The description appears usually below the item.'),
+        '#options' => _advanced_search_publication_type_options(),
+        '#default_value' => -1,
+      );
+      
+      $form['filters']['language'] = array(
+        '#type' => 'select',
+        '#title' => t('Language'),
+        '#description' => t('The description appears usually below the item.'),
+        '#options' => _advanced_search_language_options(),
+        '#default_value' => 'en',
+      );
+
+      $form['filters']['search_favourite_journals_only'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Search favourite journals only'),
+        '#default_value' => 0,
+      );
+      
+      $form['filters']['edit_favourites'] = array(
+        // '#type' => 'markup',
+        '#value' => l('(Edit favourites)','favourites/list'),
+        '#prefix' => '<div>',
+        '#suffix' => '</div>',
+      );
+      
+      
+      $form['filters']['exclude_review_articles'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Exclude review articles'),
+        '#default_value' => 0,
+      );
+
+      $form['filters']['articles_must_include_data_sets'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Articles must include data sets'),
+        '#default_value' => 0,
+      );
+      
+      $form['submit']['#weight'] = 99;
+
+      $form['#submit'][] = 'advanced_search_submit_form_handler';
+      break;
+  }
+}
+
+
+function advanced_search_page_form() {
+  $form = array();
+  
+  
+  return $form;
+}
+
